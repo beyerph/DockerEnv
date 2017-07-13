@@ -1,2 +1,5 @@
 ### MySQL-Version ############################################
     FROM mysql:5.7.17
+
+
+    RUN echo "thread_stack = 512K" >> "/etc/mysql/conf.d/docker.cnf"
