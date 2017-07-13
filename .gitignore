@@ -1,0 +1,5 @@
+.DS_Store
+.env
+/project
+.idea
+/docker_data

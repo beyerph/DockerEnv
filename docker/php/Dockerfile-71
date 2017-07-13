@@ -1,0 +1,36 @@
+### PHP-Version ############################################
+    FROM php:7.1-fpm
+
+
+### SET Shopware ENV #######################################
+    ARG SHOPWARE_ENV=live
+    ENV SHOPWARE_ENV $SHOPWARE_ENV
+
+
+### Extensions #############################################
+    RUN apt-get update
+    RUN apt-get install -y wget curl libjpeg62-turbo-dev libpng12-dev libcurl3 libcurl3-dev libxml2-dev php-soap php-apc
+    RUN apt-get clean -y
+
+
+### PHP-Extensions #########################################
+    RUN docker-php-source extract &&  \
+        docker-php-ext-install pdo pdo_mysql && \
+        docker-php-ext-install session && \
+        docker-php-ext-install gd && \
+        docker-php-ext-install curl && \
+        docker-php-ext-install zip && \
+        docker-php-ext-install json && \
+        docker-php-ext-install hash && \
+        docker-php-ext-install opcache && \
+        docker-php-ext-install soap && \
+        docker-php-source delete
+
+
+### IONCUBE #################################################
+    # IONCUBE NOT AVAILABLE FOR PHP 7.1
+
+
+### User-specific Configs ##################################
+    COPY etc/zz-php.ini /usr/local/etc/php/conf.d/
+    COPY etc/zz-docker.conf /usr/local/etc/php-fpm.d/

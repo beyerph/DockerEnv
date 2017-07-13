@@ -1,0 +1,63 @@
+version: '3'
+
+services:
+
+
+
+### Apache Server Container ##################################
+
+    nginx:
+        build:
+            context: ./${DOCKER_DIRECTORY}/nginx
+        hostname: ${HOSTNAME}
+        volumes:
+            - ./${DOCKER_DIRECTORY}/nginx/logs:/var/log/nginx
+            - ./${PROJECT_DIRECTORY}:/var/www/html
+        ports:
+            - "${HTTP_PORT}:80"
+            - "${HTTPS_PORT}:443"
+        depends_on:
+          - php-fpm
+        links:
+            - php-fpm:fpm
+            - db:db
+
+
+### PHP-FPM Container #######################################
+    php-fpm:
+        build:
+            context: ./${DOCKER_DIRECTORY}/php
+            dockerfile: ${PHP_DOCKERFILE}
+            args:
+              SHOPWARE_ENV: ${SHOPWARE_ENV}
+        hostname: ${HOSTNAME}
+        volumes:
+            - ./${PROJECT_DIRECTORY}:/var/www/html
+        expose:
+            - "9000"
+#        labels:
+#          deck-chores.sw-cron.command: sh -c "php /var/www/html/engine/Shopware/Plugins/Local/Backend/osh/src/articleimport/import.php"
+#          deck-chores.sw-cron.interval: * * * * *
+
+
+### MySQL Container #######################################
+    db:
+      build:
+          context: ./${DOCKER_DIRECTORY}/mysql
+          dockerfile: ${MYSQL_DOCKERFILE}
+      hostname: ${HOSTNAME}
+      environment:
+        MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+        MYSQL_DATABASE: ${DB_NAME}
+        MYSQL_USER: ${DB_USER}
+        MYSQL_PASSWORD: ${DB_PASSWORD}
+      ports:
+        - 3306:3306
+
+
+### Cronjobs ##############################################
+    cron:
+      image: funkyfuture/deck-chores
+      restart: always
+      volumes:
+        - "/var/run/docker.sock:/var/run/docker.sock"
