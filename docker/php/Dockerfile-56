@@ -24,6 +24,7 @@
         docker-php-ext-install hash && \
         docker-php-ext-install opcache && \
         docker-php-ext-install soap && \
+        docker-php-ext-install calendar && \
         docker-php-source delete
 
 

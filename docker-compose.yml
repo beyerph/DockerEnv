@@ -25,6 +25,7 @@ services:
         links:
             - php-fpm:fpm
             - db:db
+            - ${MAIL_SERVER_TYPE}:mail            
 
 
 ### PHP-FPM Container #######################################
@@ -36,9 +37,11 @@ services:
               SHOPWARE_ENV: ${SHOPWARE_ENV}
         hostname: ${HOSTNAME}
         volumes:
-            - ./${PROJECT_DIRECTORY}:/var/www/html
+          - ./${PROJECT_DIRECTORY}:/var/www/html
         expose:
-            - "9000"
+          - "9000"
+        links:
+          - ${MAIL_SERVER_TYPE}:mail            
 #        labels:
 #          deck-chores.sw-cron.command: sh -c "php /var/www/html/engine/Shopware/Plugins/Local/Backend/osh/src/articleimport/import.php"
 #          deck-chores.sw-cron.interval: * * * * *
@@ -67,10 +70,16 @@ services:
         - "/var/run/docker.sock:/var/run/docker.sock"
 
 
-### Self-Signed-SSL ##############################################
-    ssl:
-      image: paulczar/omgwtfssl
-      volumes:
-        - ./${DOCKER_DIRECTORY}/certs:/certs
+### SMTP Container #########################################
+    smtp:
+      image: namshi/smtp
+      restart: always
       environment:
-        SSL_SUBJECT: ${HOSTNAME}
+        MAILNAME: ${HOSTNAME}
+
+
+### Mailcatcher for local Env ##############################################
+    mailcatcher:
+      image: helder/mailcatcher
+      ports:
+        - 1080:80     
