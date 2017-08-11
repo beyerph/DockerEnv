@@ -3,7 +3,7 @@
 server {
     listen 80;
     root /var/www/html;
-    server_name ${SERVER_NAME};
+    server_name ${HOST};
     rewrite     ^   https://$server_name$request_uri? permanent;
 }
 
@@ -11,22 +11,19 @@ server {
 server {
     listen 443 ssl http2;
     root /var/www/html;
-    server_name ${SERVER_NAME};
+    server_name ${HOST};
 
     ## Access and error logs.
-    access_log /var/log/nginx/vhost.com.access.log;
-    error_log  /var/log/nginx/vhost.com.error.log;
+    access_log /var/log/nginx/${HOST}.access.log;
+    error_log  /var/log/nginx/${HOST}.error.log;
 
     set $shopware_env 'local';
 
-
     ssl on;
-    ssl_certificate ssl/cert.pem;
-    ssl_certificate_key ssl/key.pem;
-    ssl_session_cache   shared:SSL:10m;
-    ssl_session_timeout 10m;
-    ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
-    ssl_ciphers         HIGH:!aNULL:!MD5;
+    ssl_certificate ssl/${HOST}.crt;
+    ssl_certificate_key ssl/${HOST}.key;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout  10m;
 
 
     include global/shopware.conf;

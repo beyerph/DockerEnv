@@ -33,19 +33,19 @@
         wget http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz && \
         tar xfz ioncube_loaders_lin_x86-64.tar.gz && \
         mv ioncube /usr/local/ && \
-        echo "zend_extension = /usr/local/ioncube/ioncube_loader_lin_5.6.so" >> "/usr/local/etc/php/conf.d/00-ioncube.ini"
+        echo "zend_extension = /usr/local/ioncube/ioncube_loader_lin_7.0.so" >> "/usr/local/etc/php/conf.d/00-ioncube.ini"
 
 
 ### Install APCu ############################################
     ADD https://pecl.php.net/get/apcu-5.1.3.tgz /tmp/apcu.tar.gz
-    RUN mkdir -p /usr/src/php/ext/apcu && tar xf /tmp/apcu.tar.gz -C /usr/src/php/ext/apcu --strip-components=1
+    RUN mkdir -p /usr/src/php/ext/apcu && mv /tmp/apcu.tar.gz/apcu-5.1.3/* /usr/src/php/ext/apcu
     RUN docker-php-ext-configure apcu && docker-php-ext-install apcu
-    RUN rm -rd /usr/src/php/ext/apcu && rm /tmp/apcu.tar.gz
+    RUN rm -rd /usr/src/php/ext/apcu && rm -rf /tmp/apcu.tar.gz
 
     ADD https://pecl.php.net/get/apcu_bc-1.0.3.tgz /tmp/apcu_bc.tar.gz
-    RUN mkdir -p /usr/src/php/ext/apcu-bc && tar xf /tmp/apcu_bc.tar.gz -C /usr/src/php/ext/apcu-bc --strip-components=1
+    RUN mkdir -p /usr/src/php/ext/apcu-bc && mv /tmp/apcu_bc.tar.gz/apcu_bc-1.0.3/* /usr/src/php/ext/apcu-bc
     RUN docker-php-ext-configure apcu-bc && docker-php-ext-install apcu-bc
-    RUN rm -rd /usr/src/php/ext/apcu-bc && rm /tmp/apcu_bc.tar.gz
+    RUN rm -rd /usr/src/php/ext/apcu-bc && rm -rf /tmp/apcu_bc.tar.gz
 
     RUN rm /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini
     RUN echo extension=apcu.so > /usr/local/etc/php/conf.d/20-php-ext-apcu.ini
@@ -58,3 +58,20 @@
 ### User-specific Configs ##################################
     COPY etc/zz-php.ini /usr/local/etc/php/conf.d/
     COPY etc/zz-docker.conf /usr/local/etc/php-fpm.d/
+
+
+### ImageMagick install ####################################
+    RUN apt-get -y install libmagickwand-dev --no-install-recommends
+    RUN pecl install imagick
+    RUN docker-php-ext-enable imagick
+
+
+### GD install ##############################################
+    RUN apt-get -y install  libfreetype6-dev libjpeg62-turbo-dev libpng12-dev libxpm-dev libvpx-dev
+    RUN docker-php-ext-configure gd \
+            --with-freetype-dir=/usr/lib/x86_64-linux-gnu/ \
+            --with-jpeg-dir=/usr/lib/x86_64-linux-gnu/ \
+            --with-xpm-dir=/usr/lib/x86_64-linux-gnu/ \
+            --with-vpx-dir=/usr/lib/x86_64-linux-gnu/
+    RUN docker-php-ext-install gd
+    RUN rm -r /var/lib/apt/lists/* 

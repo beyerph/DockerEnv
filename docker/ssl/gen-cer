@@ -1,0 +1,28 @@
+#!/bin/bash
+
+export IFS=",";
+for HOST in $CA_HOSTS;
+do
+
+    if [ -f "/certs/$HOST.key" ]
+    then
+        echo "NOT CREATING CERT FOR $HOST - EXISTING";
+        continue;
+    fi
+
+    echo "+------------GENERATE CERT FOR $HOST------------+";
+    openssl req \
+        -newkey rsa:2048 \
+        -x509 \
+        -nodes \
+        -keyout /certs/$HOST.key \
+        -new \
+        -out /certs/$HOST.crt \
+        -subj /CN=$HOST \
+        -reqexts SAN \
+        -extensions SAN \
+        -config <(cat /etc/ssl/openssl.cnf \
+            <(printf "[SAN]\nsubjectAltName=DNS:$HOST")) \
+        -sha256 \
+        -days 3650
+done

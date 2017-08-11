@@ -10,12 +10,12 @@ services:
         build:
             context: ./${DOCKER_DIRECTORY}/nginx
             args:
-              SERVER_NAME: ${HOSTNAME}
+              HOSTNAMES: ${NGINX_HOSTNAMES}
         hostname: ${HOSTNAME}
         volumes:
             - ./${DOCKER_DIRECTORY}/nginx/logs:/var/log/nginx
             - ./${PROJECT_DIRECTORY}:/var/www/html
-            - ./${DOCKER_DIRECTORY}/certs:/etc/nginx/ssl
+            - ./${DOCKER_DIRECTORY}/ssl/certs:/etc/nginx/ssl
         ports:
             - "${HTTP_PORT}:80"
             - "${HTTPS_PORT}:443"
@@ -82,4 +82,15 @@ services:
     mailcatcher:
       image: helder/mailcatcher
       ports:
-        - 1080:80     
+        - 1080:80    
+
+
+### Create SelfSignedCerts ##############################################
+    ssl:
+        build:
+            context: ./${DOCKER_DIRECTORY}/ssl
+        hostname: ${HOSTNAME}
+        environment:
+            CA_HOSTS: ${CA_HOSTS}
+        volumes:
+            - ./${DOCKER_DIRECTORY}/ssl/certs:/certs

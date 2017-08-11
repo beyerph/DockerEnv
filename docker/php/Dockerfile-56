@@ -47,3 +47,6 @@
 ### User-specific Configs ##################################
     COPY etc/zz-php.ini /usr/local/etc/php/conf.d/
     COPY etc/zz-docker.conf /usr/local/etc/php-fpm.d/
+
+
+### @TODO: Install ImageMagick / imagick  ####################################
