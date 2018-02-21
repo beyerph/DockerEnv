@@ -1,31 +1,46 @@
+# ALWAYS SSL?
+#server {
+#    listen 80;
+#    root /var/www/html;
+#    server_name ${HOST};
+#    rewrite     ^   https://$server_name$request_uri? permanent;
+#}
 
 
 server {
+    gzip on;
     listen 80;
     root /var/www/html;
     server_name ${HOST};
-    rewrite     ^   https://$server_name$request_uri? permanent;
+    ## Access and error logs.
+    access_log /var/log/nginx/vhost.com.access.log;
+    error_log  /var/log/nginx/vhost.com.error.log;
+    set $shopware_env '${SHOPWARE_ENV}';
+    client_max_body_size 24M;
+    include global/shopware.conf;
 }
 
 
 server {
+    gzip on;
     listen 443 ssl http2;
     root /var/www/html;
     server_name ${HOST};
 
     ## Access and error logs.
-    access_log /var/log/nginx/${HOST}.access.log;
-    error_log  /var/log/nginx/${HOST}.error.log;
+    access_log /var/log/nginx/vhost.com.access.log;
+    error_log  /var/log/nginx/vhost.com.error.log;
 
-    set $shopware_env 'local';
+    set $shopware_env '${SHOPWARE_ENV}';
+
 
     ssl on;
-    ssl_certificate ssl/${HOST}.crt;
-    ssl_certificate_key ssl/${HOST}.key;
+    ssl_certificate ssl/${HOST}.crt; # cert.pem
+    ssl_certificate_key ssl/${HOST}.key; # key.key
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout  10m;
 
-
+    client_max_body_size 24M;
     include global/shopware.conf;
 
 }

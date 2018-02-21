@@ -5,12 +5,12 @@ services:
 
 
 ### Apache Server Container ##################################
-
     nginx:
         build:
             context: ./${DOCKER_DIRECTORY}/nginx
             args:
               HOSTNAMES: ${NGINX_HOSTNAMES}
+              SHOPWARE_ENV: ${SHOPWARE_ENV}
         hostname: ${HOSTNAME}
         volumes:
             - ./${DOCKER_DIRECTORY}/nginx/logs:/var/log/nginx
@@ -41,10 +41,12 @@ services:
         expose:
           - "9000"
         links:
-          - ${MAIL_SERVER_TYPE}:mail            
-#        labels:
-#          deck-chores.sw-cron.command: sh -c "php /var/www/html/engine/Shopware/Plugins/Local/Backend/osh/src/articleimport/import.php"
-#          deck-chores.sw-cron.interval: * * * * *
+          - ${MAIL_SERVER_TYPE}:mail
+          - redis:redis
+#          - elasticsearch:elasticsearch
+        labels:
+          deck-chores.sw-cron.command: sh -c "php /var/www/html/bin/console --env=${SHOPWARE_ENV} sw:cron:run"
+          deck-chores.sw-cron.interval: every minute
 
 
 ### MySQL Container #######################################
@@ -94,3 +96,56 @@ services:
             CA_HOSTS: ${CA_HOSTS}
         volumes:
             - ./${DOCKER_DIRECTORY}/ssl/certs:/certs
+
+
+### DB-Backups ##############################################
+#    db_backup:
+#      image: deitch/mysql-backup
+#      container_name: db_backup
+#      restart: always
+#      environment:
+#        - DB_DUMP_TARGET=/db
+#        - DB_USER=root
+#        - DB_PASS=${DB_ROOT_PASSWORD}
+#        - DB_DUMP_FREQ=720
+#      links:
+#        - db:db
+#      volumes:
+#        - "./../backups/db:/db"
+
+
+### REDIS for Storing the SW-Sessions and Cache ##############################################
+    redis:
+      image: 'bitnami/redis:4.0'
+      environment:
+        - ALLOW_EMPTY_PASSWORD=yes
+      ports:
+        - '6379:6379'
+      volumes:
+        - ./${DOCKER_DIRECTORY}/redis/data:/bitnami
+
+
+### ELASTICSEARCH ##############################################
+#    elasticsearch:
+#      build:
+#          context: ./${DOCKER_DIRECTORY}/el
+#      ports:
+#        - "9200:9200"
+#        - "9300:9300"
+#      environment:
+#        TERM: xterm
+#        ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+#        "http.host": 0.0.0.0
+#        "transport.host": 127.0.0.1        
+
+
+
+
+
+
+
+
+
+
+
+            
